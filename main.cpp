@@ -15,7 +15,7 @@ queue<int> q;
 
 int main() {
     fstream fs;
-    fs.open(R"(C:/Users/kamil/Desktop/projekt_Techniki_Programowania/Projekt-2TP/graph.txt)", ios::in);
+    fs.open("graph.txt", ios::in);
     if (!fs) {
         cerr << "Failed to open the file"<< endl;
         exit(1);
@@ -27,8 +27,6 @@ int main() {
             cout << dane;
         }
     }
-
-
 
     fs.close();
     return 0;
