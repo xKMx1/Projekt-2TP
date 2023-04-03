@@ -1,5 +1,5 @@
 #include <iostream>
-#include<fstream>
+#include <fstream>
 #include <queue>
 #include <vector>
 
@@ -7,20 +7,22 @@ using namespace std;
 
 queue<int> q;
 
-void openFile(fstream *fs){
-    fs.open(graf.txt, ios::in);
-
+int main() {
+    fstream fs;
+    fs.open(R"(C:/Users/kamil/Desktop/projekt_Techniki_Programowania/Projekt-2TP/graph.txt)", ios::in);
     if (!fs) {
         cerr << "Failed to open the file"<< endl;
         exit(1);
     }
-}
 
-int main() {
-    fstream fs;
-    openFile(fs);
+    while(fs.is_open()){
+        char dane[100];
+        while(fs >> dane){
+            cout << dane;
+        }
+    }
 
-    cout << fs.read();
+
 
     fs.close();
     return 0;
