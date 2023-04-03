@@ -7,11 +7,14 @@ using namespace std;
 
 class Node{
 public:
-    int value;
+    char value;
     bool visited;
 };
 
 queue<int> q;
+vector<vector<Node>> collection;
+vector<Node> nodeVector;
+
 
 int main() {
     fstream fs;
@@ -20,12 +23,25 @@ int main() {
         cerr << "Failed to open the file"<< endl;
         exit(1);
     }
+    Node currentChar{};
+    while(fs >> currentChar.value){
+        fs >> currentChar.value;
 
-    while(fs.is_open()){
-        char dane[100];
-        while(fs >> dane){
-            cout << dane;
+        if(currentChar.value == ']'){
+            collection.push_back(nodeVector);
+            nodeVector.clear();
         }
+        else if(currentChar.value == '[' or currentChar.value == ','){
+        }
+        else{
+            nodeVector.push_back(currentChar);
+        }
+    }
+    for (const auto& row : collection) {
+        for (const auto& node : row) {
+            cout << node.value << " ";
+        }
+        cout << endl;
     }
 
     fs.close();
