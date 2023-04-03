@@ -5,6 +5,12 @@
 
 using namespace std;
 
+class Node{
+public:
+    int value;
+    bool visited;
+};
+
 queue<int> q;
 
 int main() {
