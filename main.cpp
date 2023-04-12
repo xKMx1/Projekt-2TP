@@ -1,83 +1,20 @@
 #include <iostream>
 #include <fstream>
-#include <queue>
 #include <vector>
+#include <queue>
 
 using namespace std;
-
-struct remember {
-    int index;
-    char node;
-};
 
 class Node {
 public:
     char value;
     bool visited;
+    int id;
 };
 
-queue<Node> q;
 vector<vector<Node>> collection;
-vector<Node> nodeVector;
-vector<remember> neighbours;
 
-void makeNodeVisited(Node root)
-{
-    for (int j = 0; j < collection.size(); j++)
-    {
-        for (int k = 0; k < collection[j].size(); k++)
-        {
-            if (nodeVector[k].value == root.value)
-            {
-                nodeVector[k].visited = true;
-            }
-        }
-    }
-}
-
-void pushToQueue(int currentIndex)
-{
-    for (int j = 0; j < collection.size(); j++)
-    {
-        for (int k = 0; k < collection[currentIndex].size(); k++)
-        {
-            if (j == currentIndex)
-            {
-                if (!nodeVector[k].visited)
-                {
-                    q.push(nodeVector[k]);
-                }
-            }
-        }
-    }
-}
-
-void queueSearch(Node root)
-{
-    int currentIndex = 0;
-    Node firstInQueue{};
-    q.push(root);
-
-    for (int i = 0; i < neighbours.size(); i++)
-    {
-        if (neighbours[i].node == root.value)
-        {
-            currentIndex = neighbours[i].index;
-        }
-    }
-
-    int iterator = 0;
-
-    firstInQueue = q.front();
-    cout << firstInQueue.value;
-    pushToQueue(currentIndex);
-    makeNodeVisited(root);
-    q.pop();
-    root = q.front();
-}
-
-void makeVector() {
-    int level = 0;
+void makeVector(Node *Tab, int k) {
     fstream fs;
 
     fs.open("graph.txt", ios::in);
@@ -85,44 +22,92 @@ void makeVector() {
         cerr << "Failed to open the file" << endl;
         exit(1);
     }
+    string line;
+    int n = 0;
 
-    Node currentChar{};
-    while (fs >> noskipws >> currentChar.value)
-    {
-        if (currentChar.value == '\n') {
-            collection.push_back(nodeVector);
-            nodeVector.clear();
-            level = 0;
-        }
-        else if (currentChar.value == ' ') {
-            level = 1;
-        }
-        else if (level == 0)
-        {
-            remember currentNode{};
-            currentNode.index= collection.size();
-            currentNode.node= currentChar.value;
-            neighbours.push_back(currentNode);
-        }
-        else {
-            nodeVector.push_back(currentChar);
-        }
+    for (int i = 0; i < k; i++) { // for wypełniająy po koeli id wierzchołków
+        Tab[i].id = n;
+        Tab[i].visited = false;
+        n++;
     }
-    for (const auto& row : collection) {
-        for (const auto& node : row) {
-            cout << node.value << " ";
+    n = 0; // zerujemy n do ponownego użycia
+
+    while (getline(fs, line)) { // przelatujemy przez cały plik linia po lini i uzupełniamy value wierchołków w głownej tablicy
+        for (int i = 0; i < line.size(); i++) {
+            if(i == 0){
+                Tab[n].value = line[i];
+            }
         }
-        cout << endl;
+        n++;
     }
+
+    fs.clear();           // dwie linijki które umożliwiają nam pownowną iterację po całym pliku
+    fs.seekg(0, fs.beg);
+
+    while(getline(fs, line)){    // iterujemy po pliku linia po liniu i zapełniamy małe wektory
+        vector<Node> nodeVector;
+        for (int i = 0; i < line.size(); i++) {
+            if (line[i] != ' ' && i > 1) {
+                for(int j = 0; j < k; j++){
+                    if(Tab[j].value == line[i]){
+                        nodeVector.push_back(Tab[j]);
+                    }
+                }
+            }
+        }
+        collection.push_back(nodeVector);
+        nodeVector.clear();
+    }
+
+//    cout << "-------Wczytywanie-------" << endl;
+//    for (const auto& row : collection) {
+//        for (const auto& node : row) {
+//            cout << node.value << " ";
+//        }
+//        cout << endl;
+//    }
+//    cout << "-------------------------" << endl;
     fs.close();
 }
 
 
+void bfs(vector<vector<Node>>& graph, Node start, Node *Tab, int k) {
+    queue<Node> q;
+
+    // dodanie startowego wierzchołka do kolejki i oznaczenie go jako odwiedzony
+    q.push(start);
+    for(int j = 0; j < k; j++){      // przeszukujemy główną tablicę i oznaczamy startowy wierzchołek jako odwiedzony
+        if(Tab[j].id == start.id){
+            Tab[j].visited = true;
+        }
+    }
+
+    while (!q.empty()) {
+        // pobranie pierwszego wierzchołka z kolejki
+        Node current = q.front();
+        q.pop();
+
+        cout << current.value << " ";
+
+        // dla każdego nieodwiedzonego sąsiada aktualnego wierzchołka
+        for (Node& neighbor : collection[current.id]) {
+            for(int j = 0; j < k; j++){
+                if(Tab[j].id == neighbor.id && Tab[j].visited == false){
+                    q.push(Tab[j]);
+                    Tab[j].visited = true;
+                }
+            }
+        }
+    }
+}
+
 int main() {
-    makeVector();
-    Node root{};
-    cout << "od ktorego wierzcholka chcesz zaczac przeszukiwanie?" << endl;
-    cin >> root.value;
-    queueSearch(root);
+    int k;
+    cout << "Ile wierzcholkow ma graf: "; // tworzymy dynamiczną tablicę Nodeów
+    cin >> k;
+    Node *Tab = new Node[k];
+
+    makeVector(Tab, k);
+    bfs(collection, Tab[0], Tab, k);
     return 0;
 }
